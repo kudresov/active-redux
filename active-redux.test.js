@@ -8,11 +8,13 @@ beforeEach(() => {
       users: {
         1: {
           id: 1,
-          name: 'Vitalij'
+          name: 'Vitalij',
+          points: 23,
         },
         2: {
           id: 2,
           name: 'Beata',
+          points: 90,
         }
       },
       orders: {
@@ -73,3 +75,17 @@ it('should find most expensive item in the order', () => {
   initialiseStore(store);
   expect(Users.findById(1).orders.products.max('price').price).toEqual(0.50);
 });
+
+it('should allow to find user with highest points', () => {
+  initialiseStore(store);
+  expect(Users.max('points').name).toEqual('Beata');
+})
+
+it('should find a user with least amount of points', () => {
+  initialiseStore(store);
+  expect(Users.min('points').name).toEqual('Vitalij');
+})
+
+it('should return all Users', () => {
+  expect(Users.all.length).toEqual(2);
+})
