@@ -8,7 +8,11 @@ beforeEach(() => {
       users: {
         1: {
           id: 1,
-          name: 'Vitalj'
+          name: 'Vitalij'
+        },
+        2: {
+          id: 2,
+          name: 'Beata',
         }
       },
       orders: {
@@ -34,18 +38,38 @@ beforeEach(() => {
   }
 });
 
-it('should find cheapest prodcut in the order', () => {
+it('should find user by id', () => {
   initialiseStore(store);
-  expect(Users.findById(1).orders.products.min('price')).toEqual(0.25);
+  expect(Users.findById(1).name).toEqual('Vitalij');
+});
+
+it('should find another user by id', () => {
+  initialiseStore(store);
+  expect(Users.findById(2).name).toEqual('Beata');
+});
+
+it('should get at least one user order', () => {
+  initialiseStore(store);
+  expect(Users.findById(1).orders.length).toEqual(1);
+});
+
+it('should get order products', () => {
+  initialiseStore(store);
+  expect(Users.findById(1).orders.products.length).toEqual(2);
+});
+
+it('should find cheapest product in the order', () => {
+  initialiseStore(store);  
+  expect(Users.findById(1).orders.products.min('price').price).toEqual(0.25);
 });
 
 it('should find the cheapest item in the order with 3 items', () => {
   store.entitities.products[3] = ({name: 'onion', price: 0.1});
   initialiseStore(store);
-  expect(Users.findById(1).orders.products.min('price')).toEqual(0.10);
+  expect(Users.findById(1).orders.products.min('price').price).toEqual(0.10);
 });
 
 it('should find most expensive item in the order', () => {
   initialiseStore(store);
-  expect(Users.findById(1).orders.products.max('price')).toEqual(0.50);
+  expect(Users.findById(1).orders.products.max('price').price).toEqual(0.50);
 });
