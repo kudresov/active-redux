@@ -11,10 +11,14 @@ class Records {
     return res;
   }
 
-  min(propName){
+  min(propName) {
     const initValue = {[propName]: Infinity};
     const res = R.reduce((a, b) => a[propName] < b[propName] ? a : b, initValue, this.all);      
     return res;
+  }
+
+  findBy(predicate){
+    return R.find(predicate, this.all);
   }
 
   get all(){
@@ -23,41 +27,29 @@ class Records {
 }
 
 class Products extends Records{
-  constructor(products){
-    super();
-    this._products = products;
-  }
-
-  min(propName){
-    const initValue = {[propName]: Infinity};
-    const res = R.reduce((a, b) => a[propName] < b[propName] ? a : b, initValue, R.values(this._products));      
-    return res;
-  }
-  max(propName){
-    const initValue = {[propName]: -Infinity};
-    const res = R.reduce((a, b) => a[propName] > b[propName] ? a : b, initValue, R.values(this._products));      
-    return res;
-  }
-  get all(){
-    return R.values(R.path(this._itemsPath, store));
-  }
-  get length() { 
-    return R.values(this._products).length
+  constructor(items, store){
+    super(items);
+    this._items = items;
   }
 }
 
-const Order = (order) => {
-  return {
-    get products(){
-      return new Products(store.entitities.products);
-    }
-  }
-}
+// const Order = (order, store) => {
+//   return {
+//     get products(){
+//       return new Products(store.entitities.products);
+//     }
+//   }
+// }
 
 const Orders = (orders, store) => {
   return {
     get products(){
-      return new Products(store.entitities.products);
+      const getOrderProducts = R.compose(
+        R.map(id => store.entitities.products[id]),
+        R.flatten,
+        R.map(R.prop('products')),
+        R.values);
+      return new Products(getOrderProducts(orders));
     },
     get length(){
       return R.values(orders).length;

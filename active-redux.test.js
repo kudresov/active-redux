@@ -31,6 +31,11 @@ const createStore = () => ({
         id: 2,
         name: 'kiwi',
         price: 0.5
+      },
+      3: {
+        id: 3,
+        name: 'orange',
+        price: 0.75
       }
     }
   }
@@ -77,13 +82,19 @@ describe('User', () => {
     const Users = createAr(store);
     expect(Users.all.length).toEqual(2);
   })
+
+  it('should find by name', () => {
+    const store = createStore();
+    const Users = createAr(store);
+    expect(Users.findBy(u => u.name === 'Vitalij').name).toEqual('Vitalij');
+  })
 });
 
 describe('Products', () => {
   it('should get order products', () => {
     const store = createStore();
     const Users = createAr(store);
-    expect(Users.findById(1).orders.products.length).toEqual(2);
+    expect(Users.findById(1).orders.products.all.length).toEqual(2);
   });
 
   it('should find cheapest product in the order', () => {
@@ -94,7 +105,8 @@ describe('Products', () => {
 
   it('should find the cheapest item in the order with 3 items', () => {
     const store = createStore();
-    store.entitities.products[3] = ({name: 'onion', price: 0.1});
+    store.entitities.products[4] = ({name: 'onion', price: 0.1});
+    store.entitities.orders[1].products.push(4);
     const Users = createAr(store);
     expect(Users.findById(1).orders.products.min('price').price).toEqual(0.10);
   });
