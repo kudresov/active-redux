@@ -1,12 +1,8 @@
 const R = require('ramda');
-let store = {};
 
-const initialiseStore = (s) => {
-  store = s;
-}
-
-class Record {
-  constructor(){
+class Records {
+  constructor(items){
+    this._items = items;
   }
 
   max(propName) {
@@ -22,11 +18,11 @@ class Record {
   }
 
   get all(){
-    return R.values(R.path(itemsPath, store));
+    return R.values(this._items);
   }
 }
 
-class Products extends Record{
+class Products extends Records{
   constructor(products){
     super();
     this._products = products;
@@ -42,6 +38,9 @@ class Products extends Record{
     const res = R.reduce((a, b) => a[propName] > b[propName] ? a : b, initValue, R.values(this._products));      
     return res;
   }
+  get all(){
+    return R.values(R.path(this._itemsPath, store));
+  }
   get length() { 
     return R.values(this._products).length
   }
@@ -55,7 +54,7 @@ const Order = (order) => {
   }
 }
 
-const Orders = (orders) => {
+const Orders = (orders, store) => {
   return {
     get products(){
       return new Products(store.entitities.products);
@@ -66,10 +65,10 @@ const Orders = (orders) => {
   }
 }
 
-const User = (user) => {
+const User = (user, store) => {
   return {
     get orders(){
-      return Orders(store.entitities.orders);
+      return Orders(store.entitities.orders, store);
     },
     get name(){
       return user.name;
@@ -77,24 +76,18 @@ const User = (user) => {
   }
 }
 
-class Users extends Record {
-  constructor(itemsPath){
-    super();
-    this._itemsPath = itemsPath;
+class Users extends Records {
+  constructor(items, store){
+    super(items);
+    this._items = items;
+    this._store = store;
   }
 
   findById(id) {
-    return User(store.entitities.users[id]);
-  }
-
-  get all(){
-    return R.values(R.path(this._itemsPath, store));
+    return User(this._items[id], this._store);
   }
 }
 
-Users.prototype = new Record();
-
-module.exports = {
-  Users: new Users(['entitities', 'users']),
-  initialiseStore
-};
+module.exports = (store) => ({
+  Users: new Users(store.entitities.users, store)
+});
