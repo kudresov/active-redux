@@ -1,0 +1,14 @@
+{
+  "name": "active-redux",
+  "version": "1.0.0",
+  "description": "",
+  "main": "active-redux.js",
+  "scripts": {
+    "test": "jest --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jest": "^19.0.2"
+  }
+}
