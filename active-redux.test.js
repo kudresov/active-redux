@@ -18,7 +18,8 @@ const createStore = () => ({
       1: {
         id: 1,
         products: [1, 2],
-        user: 1
+        user: 1,
+        isPaid: false,
       }
     },
     products: {
@@ -62,7 +63,7 @@ describe('User', () => {
   it('get at least one user order', () => {
     const store = createStore();
     const Users = createAr(store);
-    expect(Users.findById(1).orders.length).toEqual(1);
+    expect(Users.findById(1).orders.all.length).toEqual(1);
   });
 
   it('should allow to find user with highest points', () => {
@@ -120,8 +121,8 @@ describe('Products', () => {
 
 describe('Orders', () => {
   it('should get correct order count', () => {
-  const store = createStore();
-  const Users = createAr(store);
-  // expect()
+    const store = createStore();
+    const Users = createAr(store);
+    expect(Users.findById(1).orders.all.length).toEqual(1);
   });
 })

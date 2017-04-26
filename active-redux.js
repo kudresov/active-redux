@@ -27,40 +27,33 @@ class Records {
 }
 
 class Products extends Records{
-  constructor(items, store){
+  constructor(items, store) {
     super(items);
     this._items = items;
   }
 }
 
-// const Order = (order, store) => {
-//   return {
-//     get products(){
-//       return new Products(store.entitities.products);
-//     }
-//   }
-// }
+class Orders extends Records{ 
+  constructor(items, store) {
+    super(items);
+    this._items = items;
+    this._store = store;
+  }
 
-const Orders = (orders, store) => {
-  return {
-    get products(){
-      const getOrderProducts = R.compose(
-        R.map(id => store.entitities.products[id]),
-        R.flatten,
-        R.map(R.prop('products')),
-        R.values);
-      return new Products(getOrderProducts(orders));
-    },
-    get length(){
-      return R.values(orders).length;
-    }
+  get products(){
+    const getOrderProducts = R.compose(
+      R.map(id => this._store.entitities.products[id]),
+      R.flatten,
+      R.map(R.prop('products')),
+      R.values);
+    return new Products(getOrderProducts(this._items));
   }
 }
 
 const User = (user, store) => {
   return {
     get orders(){
-      return Orders(store.entitities.orders, store);
+      return new Orders(store.entitities.orders, store);
     },
     get name(){
       return user.name;
