@@ -50,14 +50,20 @@ class Orders extends Records{
   }
 }
 
-const User = (user, store) => {
-  return {
-    get orders(){
-      return new Orders(store.entitities.orders, store);
-    },
-    get name(){
-      return user.name;
-    },
+class User {
+  constructor(user, store) {
+    this._user = user;
+    this._store = store;
+  }
+
+  get orders(){
+    const getUserOrders = R.filter(R.propEq('userId', this._user.id), R.values(this._store.entitities.orders));
+    
+    return new Orders(getUserOrders, this._store);
+  }
+
+  get value(){
+    return this._user;
   }
 }
 
@@ -69,7 +75,7 @@ class Users extends Records {
   }
 
   findById(id) {
-    return User(this._items[id], this._store);
+    return new User(this._items[id], this._store);
   }
 }
 

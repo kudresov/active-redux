@@ -18,8 +18,14 @@ const createStore = () => ({
       1: {
         id: 1,
         products: [1, 2],
-        user: 1,
+        userId: 1,
         isPaid: false,
+      },
+      2: {
+        id: 2,
+        userId: 2,
+        products: [3],
+        isPaid: true,
       }
     },
     products: {
@@ -51,13 +57,19 @@ describe('User', () => {
   it('find user by id', () => {
     const store = createStore();
     const Users = createAr(store);
-    expect(Users.findById(1).name).toEqual('Vitalij');
+    expect(Users.findById(1).value.name).toEqual('Vitalij');
+  });
+
+  it('user has correct number of poings', () => {
+    const store = createStore();
+    const Users = createAr(store);
+    expect(Users.findById(1).value.points).toEqual(23);
   });
 
   it('find another user by id', () => {
     const store = createStore();
     const Users = createAr(store);
-    expect(Users.findById(2).name).toEqual('Beata');
+    expect(Users.findById(2).value.name).toEqual('Beata');
   });
 
   it('get at least one user order', () => {
