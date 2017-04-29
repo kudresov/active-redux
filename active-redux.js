@@ -3,8 +3,9 @@ const R = require('ramda');
 let ars = {}
 
 class Records {
-  constructor(items){
+  constructor(items, store){
     this._items = items;
+    this._store = store;
   }
 
   max(propName) {
@@ -45,71 +46,70 @@ class Records {
   getRecordFunc(){
     return ars[this.getRecordClassName()];
   }
-}
 
-class Products extends Records{
-  constructor(items, store) {
-    super(items);
-    this._items = items;
-  }
-}
-
-class Order {
-  constructor(item, store) {
-    this._item = item;
-    this._store = store;
-  }
-
-  get products() {
-    return new Products(R.map(p => this._store.entitities.products[p], this._item.products));
-  }
-
-  get value() {
-    return this._item;
-  }
-}
-
-class Orders extends Records { 
-  constructor(items, store) {
-    super(items);
-    this._items = items;
-    this._store = store;
-  }
-
-  get products(){
+  hasMany(className){
+    const propName = className.name.toLowerCase();
     const getOrderProducts = R.compose(
-      R.map(id => this._store.entitities.products[id]),
+      R.map(id => this._store.entitities[propName][id]),
       R.flatten,
-      R.map(R.prop('products')),
+      R.map(R.prop(propName)),
       R.values);
     return new Products(getOrderProducts(this._items), this._store);
   }
 }
 
-class User {
+class Record {
   constructor(item, store) {
     this._item = item;
     this._store = store;
+    this.setupProps();
   }
 
-  get orders(){
-    const getUserOrders = R.filter(R.propEq('userId', this._item.id), R.values(this._store.entitities.orders));
-    
-    return new Orders(getUserOrders, this._store);
+  setupProps() {
+    for(let key of Object.keys(this._item)) {
+      const parentKeys = Object.getOwnPropertyNames(this.__proto__);
+      if(!R.contains(key, parentKeys)) {
+        Object.defineProperty(this, key, {
+          get: () => this._item[key],
+          configurable: true,
+          enumerable: true,
+        });
+      }
+    }
   }
 
-  get value(){
-    return this._item;
+  hasMany(className) {
+    const propName = className.name.toLowerCase();
+    return new className(R.map(p => this._store.entitities[propName][p], this._item[propName]), this._store);
   }
+
+  inverse(className) {
+    const propName = className.name.toLowerCase();
+    const referenceId = this.constructor.name.toLowerCase() + 'Id';
+    const items = R.filter(R.propEq(referenceId, this._item.id), R.values(this._store.entitities[propName]));
+    return new className(items, this._store);
+  }
+}
+
+class Products extends Records {
+
+}
+
+class Order extends Record {
+  get products() { return this.hasMany(Products) }
+}
+
+class Orders extends Records { 
+  get products() { return this.hasMany(Products) }
+}
+
+class User extends Record{
+  get orders() { return this.inverse(Orders) }
 }
 
 class Users extends Records {
-  constructor(items, store){
-    super(items);
-    this._items = items;
-    this._store = store;
-  }
 }
+
 ars = {
   Users,
   User,

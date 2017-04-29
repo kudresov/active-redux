@@ -59,15 +59,15 @@ beforeEach(() => {
 
 describe('User', () => {
   it('find user by id', () => {
-    expect(Users.findById(1).value.name).toEqual('Vitalij');
+    expect(Users.findById(1).name).toEqual('Vitalij');
   });
 
   it('user has correct number of poings', () => {
-    expect(Users.findById(1).value.points).toEqual(23);
+    expect(Users.findById(1).points).toEqual(23);
   });
 
   it('find another user by id', () => {
-    expect(Users.findById(2).value.name).toEqual('Beata');
+    expect(Users.findById(2).name).toEqual('Beata');
   });
 
   it('get at least one user order', () => {
@@ -87,7 +87,7 @@ describe('User', () => {
   })
 
   it('should find by name', () => {
-    expect(Users.findBy(u => u.name === 'Vitalij').value.name).toEqual('Vitalij');
+    expect(Users.findBy(u => u.name === 'Vitalij').name).toEqual('Vitalij');
   })
 });
 
@@ -127,7 +127,7 @@ describe('Orders', () => {
   });
 
   it('should find order using predicate', () => {
-    expect(Orders.findBy(o => o.id === 1).value.userId).toEqual(1);
+    expect(Orders.findBy(o => o.id === 1).userId).toEqual(1);
   });
 
   it('should allow to select orders products', () => {
