@@ -65,7 +65,6 @@ class Records {
 
   hasMany(className){
     const propName = className.name.toLowerCase();
-    // console.log(R.map(R.prop(propName), R.values(this._items)));
     const getOrderProducts = R.compose(
       R.map(id => this._store.entitities[propName][id]),
       R.flatten,
@@ -105,6 +104,10 @@ class Record {
     const referenceId = this.constructor.name.toLowerCase() + 'Id';
     const items = R.filter(R.propEq(referenceId, this._item.id), R.values(this._store.entitities[propName]));
     return new className(this._store, items);
+  }
+
+  toString() {
+    return 'zap';
   }
 }
 
