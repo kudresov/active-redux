@@ -1,11 +1,10 @@
 const R = require('ramda');
-
-let ars = {}
+const ars = {}
 
 class Records {
-  constructor(items, store){
-    this._items = items;
+  constructor(store, items){
     this._store = store;
+    this._items = items ? items : store.entitities[this.getStorePropName()];
   }
 
   max(propName) {
@@ -23,16 +22,29 @@ class Records {
   findBy(predicate){
     const RecordFunc = this.getRecordFunc();
     const record = R.find(predicate, this.all);
-    return new RecordFunc(record, this._store);
+    return new RecordFunc(this._store, record);
   }
 
   findById(id) {
     const RecordFunc = this.getRecordFunc();
-    return new RecordFunc(this._items[id], this._store);
+    return new RecordFunc(this._store, this._items[id]);
+  }
+
+  where(predicate) {
+    const RecordsFunc = this.getRecordsFunc();
+    return new RecordsFunc(this._store, R.filter(predicate, this._items));
+  }
+
+  get length(){
+    return this.all.length;
   }
 
   get all(){
     return R.values(this._items);
+  }
+
+  getStorePropName(){
+    return this.getClassName().toLowerCase();
   }
 
   getClassName(){
@@ -47,21 +59,26 @@ class Records {
     return ars[this.getRecordClassName()];
   }
 
+  getRecordsFunc(){
+    return ars[this.getClassName()];
+  }
+
   hasMany(className){
     const propName = className.name.toLowerCase();
+    // console.log(R.map(R.prop(propName), R.values(this._items)));
     const getOrderProducts = R.compose(
       R.map(id => this._store.entitities[propName][id]),
       R.flatten,
       R.map(R.prop(propName)),
       R.values);
-    return new Products(getOrderProducts(this._items), this._store);
+    return new className(this._store, getOrderProducts(this._items));
   }
 }
 
 class Record {
-  constructor(item, store) {
-    this._item = item;
+  constructor(store, item) {
     this._store = store;
+    this._item = item;
     this.setupProps();
   }
 
@@ -80,46 +97,29 @@ class Record {
 
   hasMany(className) {
     const propName = className.name.toLowerCase();
-    return new className(R.map(p => this._store.entitities[propName][p], this._item[propName]), this._store);
+    return new className(this._store, R.map(p => this._store.entitities[propName][p], this._item[propName]));
   }
 
   inverse(className) {
     const propName = className.name.toLowerCase();
     const referenceId = this.constructor.name.toLowerCase() + 'Id';
     const items = R.filter(R.propEq(referenceId, this._item.id), R.values(this._store.entitities[propName]));
-    return new className(items, this._store);
+    return new className(this._store, items);
   }
 }
 
-class Products extends Records {
-
+const registerModel = (model) => {
+  ars[model.name] = model;
 }
 
-class Order extends Record {
-  get products() { return this.hasMany(Products) }
+const registerModels = (models) => {
+  models.forEach(registerModel);
+  return ars;
 }
 
-class Orders extends Records { 
-  get products() { return this.hasMany(Products) }
+module.exports = {
+  registerModel,
+  registerModels,
+  Records,
+  Record,
 }
-
-class User extends Record{
-  get orders() { return this.inverse(Orders) }
-}
-
-class Users extends Records {
-}
-
-ars = {
-  Users,
-  User,
-  Orders,
-  Order,
-  Products,
-}
-
-module.exports = (store) => ({
-  Users: new Users(store.entitities.users, store),
-  Orders: new Orders(store.entitities.orders, store),
-  Products: new Products(store.entitities.products, store)
-});

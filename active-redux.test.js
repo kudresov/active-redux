@@ -1,5 +1,6 @@
-const activeReduxCreate = require('./active-redux');
-let Users, Products, Orders, store;
+const { Products, Orders, Users }= require('./models');
+let products, users, orders;
+let store;
 
 const createStore = () => ({
   entitities: {
@@ -7,11 +8,13 @@ const createStore = () => ({
       1: {
         id: 1,
         name: 'Vitalij',
+        surname: 'Kudresov',
         points: 23,
       },
       2: {
         id: 2,
         name: 'Beata',
+        surname: 'Vaiciunate',
         points: 90,
       }
     },
@@ -51,86 +54,93 @@ const createStore = () => ({
 
 beforeEach(() => {
   store = createStore();
-  const ar = activeReduxCreate(store);
-  Users = ar.Users;
-  Products = ar.Products;
-  Orders = ar.Orders;
+  products = new Products(store);
+  users = new Users(store);
+  orders = new Orders(store);
 });
 
 describe('User', () => {
   it('find user by id', () => {
-    expect(Users.findById(1).name).toEqual('Vitalij');
+    expect(users.findById(1).name).toEqual('Vitalij');
   });
 
   it('user has correct number of poings', () => {
-    expect(Users.findById(1).points).toEqual(23);
+    expect(users.findById(1).points).toEqual(23);
   });
 
   it('find another user by id', () => {
-    expect(Users.findById(2).name).toEqual('Beata');
+    expect(users.findById(2).name).toEqual('Beata');
   });
 
   it('get at least one user order', () => {
-    expect(Users.findById(1).orders.all.length).toEqual(1);
+    expect(users.findById(1).orders.length).toEqual(1);
   });
 
   it('should allow to find user with highest points', () => {
-    expect(Users.max('points').name).toEqual('Beata');
+    expect(users.max('points').name).toEqual('Beata');
   })
 
   it('should find a user with least amount of points', () => {
-    expect(Users.min('points').name).toEqual('Vitalij');
+    expect(users.min('points').name).toEqual('Vitalij');
   })
 
-  it('should return all Users', () => {
-    expect(Users.all.length).toEqual(2);
+  it('should return all users', () => {
+    expect(users.length).toEqual(2);
   })
 
   it('should find by name', () => {
-    expect(Users.findBy(u => u.name === 'Vitalij').name).toEqual('Vitalij');
+    expect(users.findBy(u => u.name === 'Vitalij').name).toEqual('Vitalij');
   })
+
+  it('returns full name for computed properties', () => {
+    expect(users.findById(1).fullName).toEqual('Vitalij Kudresov');
+  });
 });
 
 describe('Products', () => {
   it('should get user.order.products', () => {
-    expect(Users.findById(1).orders.products.all.length).toEqual(2);
+    expect(users.findById(1).orders.products.length).toEqual(2);
   });
 
   it('should find cheapest user.order.products', () => {
-    expect(Users.findById(1).orders.products.min('price').price).toEqual(0.25);
+    expect(users.findById(1).orders.products.min('price').price).toEqual(0.25);
   });
 
   it('should find the cheapest item in the order with 3 items', () => {
     const store = createStore();
     store.entitities.products[4] = ({name: 'onion', price: 0.1});
     store.entitities.orders[1].products.push(4);
-    const { Users } = activeReduxCreate(store);
-    expect(Users.findById(1).orders.products.min('price').price).toEqual(0.10);
+    const users = new Users(store);
+    expect(users.findById(1).orders.products.min('price').price).toEqual(0.10);
   });
 
   it('should find most expensive item in the order', () => {
-    expect(Users.findById(1).orders.products.max('price').price).toEqual(0.50);
+    expect(users.findById(1).orders.products.max('price').price).toEqual(0.50);
   });
 
   it('should find total number of products', () => {
-    expect(Products.all.length).toEqual(3);
+    expect(products.length).toEqual(3);
   });
 });
 
 describe('Orders', () => {
   it('should get correct order count', () => {
-    expect(Users.findById(1).orders.all.length).toEqual(1);
+    expect(users.findById(1).orders.length).toEqual(1);
   });
 
   it('should find a total number of orders', () => {
-    expect(Orders.all.length).toEqual(2);
+    expect(orders.length).toEqual(2);
   });
 
   it('should find order using predicate', () => {
-    expect(Orders.findBy(o => o.id === 1).userId).toEqual(1);
+    expect(orders.findBy(o => o.id === 1).userId).toEqual(1);
   });
 
   it('should allow to select orders products', () => {
-    expect(Orders.findBy(o => o.id === 1).products.all.length).toEqual(2);
+    expect(orders.findBy(o => o.id === 1).products.length).toEqual(2);
   })
+
+  it('should allow to filter orders based on predicate', () => {
+    expect(orders.where(o => o.isPaid).length).toEqual(1);
+  });
 })
