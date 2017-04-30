@@ -60,7 +60,8 @@ beforeEach(() => {
 });
 
 describe('User', () => {
-  it('find user by id', () => {
+  it.only('find user by id', () => {
+    console.log(Object.keys(users.findById(1))) ;
     expect(users.findById(1).name).toEqual('Vitalij');
   });
 

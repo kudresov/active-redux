@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-const repl = require("repl");
-const { Products, Orders, Users } = require('./models');
+import repl from 'repl';
+import { Products, Orders, Users } from './models';
 
 var replServer = repl.start({
   prompt: "iar > ",

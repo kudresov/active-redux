@@ -1,7 +1,10 @@
-const R = require('ramda');
+import * as R from 'ramda';
 const ars = {}
 
-class Records {
+export class Records {
+  protected _store: any;
+  protected _items: any;
+
   constructor(store, items){
     this._store = store;
     this._items = items ? items : store.entitities[this.getStorePropName()];
@@ -74,7 +77,10 @@ class Records {
   }
 }
 
-class Record {
+export class Record {
+  protected _store: any;
+  protected _item: any;
+
   constructor(store, item) {
     this._store = store;
     this._item = item;
@@ -83,7 +89,8 @@ class Record {
 
   setupProps() {
     for(let key of Object.keys(this._item)) {
-      const parentKeys = Object.getOwnPropertyNames(this.__proto__);
+
+      const parentKeys = Object.getOwnPropertyNames(this);
       if(!R.contains(key, parentKeys)) {
         Object.defineProperty(this, key, {
           get: () => this._item[key],
@@ -105,24 +112,13 @@ class Record {
     const items = R.filter(R.propEq(referenceId, this._item.id), R.values(this._store.entitities[propName]));
     return new className(this._store, items);
   }
-
-  toString() {
-    return 'zap';
-  }
 }
 
-const registerModel = (model) => {
+export const registerModel = (model) => {
   ars[model.name] = model;
 }
 
-const registerModels = (models) => {
+export const registerModels = (models) => {
   models.forEach(registerModel);
   return ars;
-}
-
-module.exports = {
-  registerModel,
-  registerModels,
-  Records,
-  Record,
 }
