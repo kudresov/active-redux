@@ -1,6 +1,57 @@
 const R = require('ramda');
 const ars = {}
 
+class Record {
+  constructor(store, item) {
+    this._store = store;
+    this._item = item;
+    this.setupProps();
+  }
+
+  setupProps() {
+    for(let key of Object.keys(this._item)) {
+      const parentKeys = Object.getOwnPropertyNames(this.__proto__);
+      if(!R.contains(key, parentKeys)) {
+        Object.defineProperty(this, key, {
+          get: () => this._item[key],
+          configurable: true,
+          enumerable: true,
+        });
+      }
+    }
+  }
+
+  hasMany(ctor) {
+    const className = ctor.name.toLowerCase();
+    return new ctor(this._store, R.map(p => this._store.entitities[className][p], this._item[className]));
+  }
+
+  inverse(ctor) {
+    const className = ctor.name.toLowerCase();
+    const referenceId = this.constructor.name.toLowerCase() + 'Id';
+    const items = R.filter(R.propEq(referenceId, this._item.id), R.values(this._store.entitities[className]));
+    return new ctor(this._store, items);
+  }
+
+  hasOne(ctor, ref) {
+    const className = ctor.name.toLowerCase() + 's';
+    const recordId = this[ref];
+    return new ctor(this._store, this._store.entitities[className][recordId]);
+  }
+
+  getParentMethods() {
+    return R.filter(p => p !== 'constructor', Object.getOwnPropertyNames(this.__proto__));
+  }
+
+  format() {
+    return {
+      _store: this._store ? 'defined' : 'undefined',
+      _item: this._item,
+      methods: this.getParentMethods()
+    };
+  }
+}
+
 class Records {
   constructor(store, items){
     this._store = store;
@@ -83,57 +134,6 @@ class Records {
       _items: this._items,
       methods: this.getParentMethods(),
       coreMethods: ['min', 'max', 'findBy', 'findById', 'where', 'all', 'length']
-    };
-  }
-}
-
-class Record {
-  constructor(store, item) {
-    this._store = store;
-    this._item = item;
-    this.setupProps();
-  }
-
-  setupProps() {
-    for(let key of Object.keys(this._item)) {
-      const parentKeys = Object.getOwnPropertyNames(this.__proto__);
-      if(!R.contains(key, parentKeys)) {
-        Object.defineProperty(this, key, {
-          get: () => this._item[key],
-          configurable: true,
-          enumerable: true,
-        });
-      }
-    }
-  }
-
-  hasMany(ctor) {
-    const className = ctor.name.toLowerCase();
-    return new ctor(this._store, R.map(p => this._store.entitities[className][p], this._item[className]));
-  }
-
-  inverse(ctor) {
-    const className = ctor.name.toLowerCase();
-    const referenceId = this.constructor.name.toLowerCase() + 'Id';
-    const items = R.filter(R.propEq(referenceId, this._item.id), R.values(this._store.entitities[className]));
-    return new ctor(this._store, items);
-  }
-
-  hasOne(ctor, ref) {
-    const className = ctor.name.toLowerCase() + 's';
-    const recordId = this[ref];
-    return new ctor(this._store, this._store.entitities[className][recordId]);
-  }
-
-  getParentMethods() {
-    return R.filter(p => p !== 'constructor', Object.getOwnPropertyNames(this.__proto__));
-  }
-
-  format() {
-    return {
-      _store: this._store ? 'defined' : 'undefined',
-      _item: this._item,
-      methods: this.getParentMethods()
     };
   }
 }

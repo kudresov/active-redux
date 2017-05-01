@@ -105,7 +105,8 @@ describe('User', () => {
   });
 
   it('formats correctly a collection of Users', () => {
-    expect(users.findById(1).format()).toEqual('Vitalij Kudresov');
+    const expectedResult = {"_item": {"id": 1, "name": "Vitalij", "points": 23, "surname": "Kudresov"}, "_store": "defined", "methods": ["orders", "fullName"]};
+    expect(users.findById(1).format()).toEqual(expectedResult);
   });
 });
 

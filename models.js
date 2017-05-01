@@ -12,7 +12,7 @@ class Orders extends Records {
   get products() { return this.hasMany(Products); }
 }
 
-class User extends Record{
+class User extends Record {
   get orders() { return this.inverse(Orders); }
   get fullName() { return `${this.name} ${this.surname}`; }
 }
