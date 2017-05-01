@@ -5,11 +5,11 @@ class Products extends Records {
 }
 
 class Order extends Record {
-  get products() { return this.hasMany(Products) }
+  get products() { return this.hasMany(Products); }
 }
 
 class Orders extends Records { 
-  get products() { return this.hasMany(Products) }
+  get products() { return this.hasMany(Products); }
 }
 
 class User extends Record{
@@ -20,4 +20,12 @@ class User extends Record{
 class Users extends Records {
 }
 
-module.exports = registerModels([Products, Orders, Order, Users, User]);
+class Post extends Record {
+  get author() { return this.hasOne(User, 'authorId'); }
+}
+
+class Posts extends Records {
+
+}
+
+module.exports = registerModels([Products, Orders, Order, Users, User, Posts, Post]);

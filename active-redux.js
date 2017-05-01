@@ -72,6 +72,19 @@ class Records {
       R.values);
     return new className(this._store, getOrderProducts(this._items));
   }
+
+  getParentMethods() {
+    return R.filter(p => p !== 'constructor', Object.getOwnPropertyNames(this.__proto__));
+  }
+
+  format() {
+    return {
+      _store: this._store ? 'defined' : 'undefined',
+      _items: this._items,
+      methods: this.getParentMethods(),
+      coreMethods: ['min', 'max', 'findBy', 'findById', 'where', 'all', 'length']
+    };
+  }
 }
 
 class Record {
@@ -94,20 +107,34 @@ class Record {
     }
   }
 
-  hasMany(className) {
-    const propName = className.name.toLowerCase();
-    return new className(this._store, R.map(p => this._store.entitities[propName][p], this._item[propName]));
+  hasMany(ctor) {
+    const className = ctor.name.toLowerCase();
+    return new ctor(this._store, R.map(p => this._store.entitities[className][p], this._item[className]));
   }
 
-  inverse(className) {
-    const propName = className.name.toLowerCase();
+  inverse(ctor) {
+    const className = ctor.name.toLowerCase();
     const referenceId = this.constructor.name.toLowerCase() + 'Id';
-    const items = R.filter(R.propEq(referenceId, this._item.id), R.values(this._store.entitities[propName]));
-    return new className(this._store, items);
+    const items = R.filter(R.propEq(referenceId, this._item.id), R.values(this._store.entitities[className]));
+    return new ctor(this._store, items);
   }
 
-  toString() {
-    return 'zap';
+  hasOne(ctor, ref) {
+    const className = ctor.name.toLowerCase() + 's';
+    const recordId = this[ref];
+    return new ctor(this._store, this._store.entitities[className][recordId]);
+  }
+
+  getParentMethods() {
+    return R.filter(p => p !== 'constructor', Object.getOwnPropertyNames(this.__proto__));
+  }
+
+  format() {
+    return {
+      _store: this._store ? 'defined' : 'undefined',
+      _item: this._item,
+      methods: this.getParentMethods()
+    };
   }
 }
 

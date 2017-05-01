@@ -1,9 +1,16 @@
-const { Products, Orders, Users }= require('./models');
-let products, users, orders;
+const { Products, Orders, Users, Posts } = require('./models');
+let products, users, orders, posts;
 let store;
 
 const createStore = () => ({
   entitities: {
+    posts: {
+      1: {
+        title: 'Intro to Active Redux',
+        url: '/intro-to-active-redux',
+        authorId: '1',
+      }
+    },
     users: {
       1: {
         id: 1,
@@ -57,6 +64,7 @@ beforeEach(() => {
   products = new Products(store);
   users = new Users(store);
   orders = new Orders(store);
+  posts = new Posts(store);
 });
 
 describe('User', () => {
@@ -94,6 +102,10 @@ describe('User', () => {
 
   it('returns full name for computed properties', () => {
     expect(users.findById(1).fullName).toEqual('Vitalij Kudresov');
+  });
+
+  it('formats correctly a collection of Users', () => {
+    expect(users.findById(1).format()).toEqual('Vitalij Kudresov');
   });
 });
 
@@ -144,3 +156,9 @@ describe('Orders', () => {
     expect(orders.where(o => o.isPaid).length).toEqual(1);
   });
 })
+
+describe('Posts', () => {
+  it('should find Post`s author', () => {
+    expect(posts.findById(1).author.name).toEqual('Vitalij');
+  });
+});
