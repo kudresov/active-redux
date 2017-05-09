@@ -1,9 +1,20 @@
 const { Products, Orders, Users, Posts } = require('./models');
+const sinon = require('sinon');
 let products, users, orders, posts;
 let store;
 
 const createStore = () => ({
   entitities: {
+    profiles: {
+      1: {
+        notificationsEnabled: true,
+        userId: 1,
+      },
+      2: {
+        notificationsEnabled: false,
+        userId: 2,
+      }
+    },
     posts: {
       1: {
         title: 'Intro to Active Redux',
@@ -17,12 +28,14 @@ const createStore = () => ({
         name: 'Vitalij',
         surname: 'Kudresov',
         points: 23,
+        profileId: 1,
       },
       2: {
         id: 2,
         name: 'Beata',
         surname: 'Vaiciunate',
         points: 90,
+        profileId: 2,
       }
     },
     orders: {
@@ -104,9 +117,15 @@ describe('User', () => {
     expect(users.findById(1).fullName).toEqual('Vitalij Kudresov');
   });
 
-  it('formats correctly a collection of Users', () => {
-    const expectedResult = {"_item": {"id": 1, "name": "Vitalij", "points": 23, "surname": "Kudresov"}, "_store": "defined", "methods": ["orders", "fullName"]};
+  it.only('formats correctly a collection of Users', () => {
+    var spy = sinon.spy({aa: function() {return 1}});
+    const expectedResult = {"_item": {"id": 1, "name": "Vitalij", "points": 23, "profileId": 1, "surname": "Kudresov"}, "_store": "defined", "methods": ["orders", "profile", "fullName"]};
     expect(users.findById(1).format()).toEqual(expectedResult);
+    // console.log(spy.lastCall);
+  });
+
+  it.skip('should have one profile', () => {
+    expect(users.findById(1).profile.notificationsEnabled).toEqual(true);
   });
 });
 
@@ -117,6 +136,12 @@ describe('Products', () => {
 
   it('should find cheapest user.order.products', () => {
     expect(users.findById(1).orders.products.min('price').price).toEqual(0.25);
+  });
+
+  it('should not call memoized function', () => {
+    for (i = 0; i < 50; i++) { 
+      expect(users.findById(1).orders.products.min('price').price).toEqual(0.25);
+    }
   });
 
   it('should find the cheapest item in the order with 3 items', () => {
